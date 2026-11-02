@@ -1,0 +1,20 @@
+services:
+  iconator:
+    build: .
+    image: iconator
+    ports:
+      - "3000:3000"
+    volumes:
+      # ICONS_PATH: host directory with the SVG icons
+      # ICONS_DIR: where it is mounted in the container (also passed to the server below)
+      - ${ICONS_PATH:-./icons}:${ICONS_DIR:-/usr/share/iconator/icons}:ro
+    environment:
+      ICONS_DIR: ${ICONS_DIR:-/usr/share/iconator/icons}
+      RUST_LOG: info,tower_http=debug
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped

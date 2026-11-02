@@ -29,10 +29,10 @@ lazy_static! {
 
 pub fn get_icon_for_file(path: impl AsRef<Path>) -> Option<u64> {
     let path = path.as_ref();
-    let basename = path.file_name().unwrap();
+    let basename = path.file_name()?;
 
     FILENAME_ICONS.get(basename.as_bytes()).or_else(|| {
-        let ext = path.extension().unwrap();
+        let ext = path.extension()?;
 
         EXT_ICONS.get(ext.as_bytes())
     })
@@ -40,7 +40,7 @@ pub fn get_icon_for_file(path: impl AsRef<Path>) -> Option<u64> {
 
 pub fn get_icon_for_folder(path: impl AsRef<Path>) -> Option<u64> {
     let path = path.as_ref();
-    let basename = path.file_name().unwrap();
+    let basename = path.file_name()?;
 
     FOLDER_ICONS.get(basename.as_bytes())
 }
@@ -69,5 +69,13 @@ mod test {
         assert_eq!(get_icon_for_folder("./.github"), Some(862));
         assert_eq!(get_icon_for_folder("./src"), Some(1054));
         assert_eq!(get_icon_for_folder("./tests"), Some(1084));
+    }
+
+    #[test]
+    fn unusual_paths_do_not_panic() {
+        for path in ["", "/", "..", "a/..", "unknown_file"] {
+            assert_eq!(get_icon_for_file(path), None, "{path:?}");
+            assert_eq!(get_icon_for_folder(path), None, "{path:?}");
+        }
     }
 }
